@@ -60,14 +60,21 @@ var createAndUploadArtifacts = function (options, done) {
         fs.mkdirSync(pomDir);
     }
 
+    var artifacts = [];
+    if (options.artifacts) {
+        artifacts = options.artifacts;
+    }
+    if (options.artifact) {
+        artifacts.push({
+            artifact: options.artifact,
+            packaging: options.packaging,
+            classifier: options.classifier
+        });
+    }
 
     save(createFile('project-metadata.xml', options), pomDir, 'outer.xml');
     save(createFile('latest-metadata.xml', options), pomDir, 'inner.xml');
     save(createFile('pom.xml', options), pomDir, 'pom.xml');
-
-    var artifactData = fs.readFileSync(options.artifact, {encoding: 'binary'});
-    fs.writeFileSync(pomDir + '/artifact.' + options.packaging + '.md5', md5(artifactData));
-    fs.writeFileSync(pomDir + '/artifact.' + options.packaging + '.sha1', sha1(artifactData));
 
     var upload = function (fileLocation, targetFile) {
         var uploadArtifact = function (cb) {
@@ -132,19 +139,30 @@ var createAndUploadArtifacts = function (options, done) {
         uploads[pomDir + "/inner.xml.md5"] = groupArtifactVersionPath + '/' + 'maven-metadata.xml.md5';
     }
 
-    var remoteArtifactName = options.artifactId + '-' + options.version;
-    uploads[pomDir + "/pom.xml"] = groupArtifactVersionPath + '/' + remoteArtifactName + '.pom';
-    uploads[pomDir + "/pom.xml.sha1"] = groupArtifactVersionPath + '/' + remoteArtifactName + '.pom.sha1';
-    uploads[pomDir + "/pom.xml.md5"] = groupArtifactVersionPath + '/' + remoteArtifactName + '.pom.md5';
+    var artifactBaseName = options.artifactId + '-' + options.version;
+    uploads[pomDir + "/pom.xml"] = groupArtifactVersionPath + '/' + artifactBaseName + '.pom';
+    uploads[pomDir + "/pom.xml.sha1"] = groupArtifactVersionPath + '/' + artifactBaseName + '.pom.sha1';
+    uploads[pomDir + "/pom.xml.md5"] = groupArtifactVersionPath + '/' + artifactBaseName + '.pom.md5';
 
+    artifacts.forEach(function (artifact) {
+        var artifactName;
+        if (artifact.classifier) {
+            artifactName = artifactBaseName + "-" + artifact.classifier + "." + artifact.packaging;
+        } else {
+            artifactName = artifactBaseName + "." + artifact.packaging;
+        }
 
-    if(options.classifier) {
-        remoteArtifactName = remoteArtifactName + "-" + options.classifier;
-    }
-    uploads[options.artifact] = groupArtifactVersionPath + '/' + remoteArtifactName + '.' + options.packaging;
-    uploads[pomDir + "/artifact." + options.packaging + ".sha1"] = groupArtifactVersionPath + '/' + remoteArtifactName + '.' + options.packaging + '.sha1';
-    uploads[pomDir + "/artifact." + options.packaging + ".md5"] = groupArtifactVersionPath + '/' + remoteArtifactName + '.' + options.packaging + '.md5';
+        uploads[artifact.artifact] = groupArtifactVersionPath + '/' + artifactName;
 
+        var artifactData = fs.readFileSync(artifact.artifact, {encoding: 'binary'});
+        var artifactMd5File = pomDir + '/artifact.' + artifactName + '.md5';
+        fs.writeFileSync(artifactMd5File, md5(artifactData));
+        uploads[artifactMd5File] = groupArtifactVersionPath + '/' + artifactName + '.md5';
+
+        var artifactSha1File = pomDir + '/artifact.' + artifactName + '.sha1';
+        fs.writeFileSync(artifactSha1File, sha1(artifactData));
+        uploads[artifactSha1File] = groupArtifactVersionPath + '/' + artifactName + '.sha1';
+    });
 
     var fns = [];
     for (var u in uploads) {

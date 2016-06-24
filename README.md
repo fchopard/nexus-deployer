@@ -182,12 +182,37 @@ Default value: `''`
 
 Nexus repository url. Usually /nexus/content/repositories/snapshots or /nexus/content/repositories/releases
 
-
 #### options.artifact
 Type: `String`
 Default value: `''`
 
 Artifact to be uploaded. Must be a file.
+
+#### options.artifacts
+Type: `Array`
+Default value: `[]`
+
+Artifacts to be uploaded, same as `options.artifact` but allows to upload multiple artifacts with different packagings and classifiers.
+Must be an array of objects, each one with `artifact`, `packaging` and `classifier` properties. Example:
+`
+  [
+    {
+      "artifact": "my-app",
+      "packaging": "apk",
+      "classifier": "dev"
+    },
+    {
+      "artifact": "my-app",
+      "packaging": "apk",
+      "classifier": "demo"
+    },
+    {
+      "artifact": "my-app",
+      "packaging": "apk",
+      "classifier": "prod"
+    }
+  ]
+`
 
 #### options.noproxy
 Type: `String`
