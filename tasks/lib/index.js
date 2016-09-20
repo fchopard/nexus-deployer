@@ -111,10 +111,10 @@ var createAndUploadArtifacts = function (options, done) {
                 status = data;
             });
             childProcess.on('close', function (code) {
-                if (status.substring(0, 1) == "2" || code == 0) {
-                    cb(null, "Ok");
+                if (status.substring(0, 1) == "2" && code == 0) {
+                    return cb(null);
                 } else  {
-                    cb("Status code " + status + " for " + targetUri, null);
+                    return cb("Status code " + status + " for " + targetUri);
                 }
             });
         };

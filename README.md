@@ -194,7 +194,7 @@ Default value: `[]`
 
 Artifacts to be uploaded, same as `options.artifact` but allows to upload multiple artifacts with different packagings and classifiers.
 Must be an array of objects, each one with `artifact`, `packaging` and `classifier` properties. Example:
-`
+```js
   [
     {
       "artifact": "my-app",
@@ -212,7 +212,7 @@ Must be an array of objects, each one with `artifact`, `packaging` and `classifi
       "classifier": "prod"
     }
   ]
-`
+```
 
 #### options.noproxy
 Type: `String`
